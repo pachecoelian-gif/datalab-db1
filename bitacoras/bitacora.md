@@ -234,3 +234,21 @@ Porque el `FK` solo garantiza que el experimento referenciado exista; el `UNIQUE
 
 **3. ¿Qué restricción evitaría que `dataset.tamanio_filas` fuera negativo?**
 `CHECK (tamanio_filas > 0)`.
+
+
+
+
+
+
+
+
+
+## Semana 5 — Resultados de las pruebas de integridad
+
+- **Motor(es) probado(s):** MySQL 8.x / SQL Server 2019+
+- **Pruebas ejecutadas:** 6 de 6
+- **Predicciones de Semana 3/4 que se cumplieron:** [listar]
+- **Predicciones que NO se cumplieron y por qué:** [listar]
+- **Diferencias observadas entre MySQL y SQL Server:** [listar]
+- **Ajustes realizados al DDL:** [listar]
+```
