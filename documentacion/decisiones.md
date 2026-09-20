@@ -34,3 +34,44 @@ Para esta nueva tabla decidí mantener las cosas lo más simples posible. Solame
 Para subir el diagrama de MySQL WorkBench tuve algunas complicaciones ya que me confundi a la hora de crear la carpeta y de subir en el lugar corrrecto el png, de igual manera logre solucionarlo pero quedo en el registro que borre una carpeta fallida y la imagen que quedo en medio de las carpetas flotando
 *
 * MODELO` (1:0..1)**: La participación es parcial del lado del modelo, debido a que un experimento fallido o cancelado no produce un artefacto de modelo entrenado.
+
+## Política de integridad referencial — Semana 4
+
+### participa.id_cientifico → cientifico_datos.id_cientifico
+**Política:** RESTRICT
+**Justificación:** un científico no debe eliminarse si aún tiene participaciones activas en proyectos.
+
+### participa.id_proyecto → proyecto.id_proyecto
+**Política:** CASCADE
+**Justificación:** la participación no tiene sentido sin el proyecto al que pertenece.
+
+### experimento.id_proyecto → proyecto.id_proyecto
+**Política:** RESTRICT
+**Justificación:** un proyecto no debe eliminarse si tiene experimentos registrados, para no perder evidencia de trabajo real.
+
+### usar.id_experimento → experimento.id_experimento
+**Política:** CASCADE
+**Justificación:** el registro de uso de un dataset no tiene sentido sin el experimento que lo generó.
+
+### usar.id_dataset → dataset.id_dataset
+**Política:** RESTRICT
+**Justificación:** un dataset no debe eliminarse mientras algún experimento dependa de él, para conservar trazabilidad.
+
+### modelo.id_experimento → experimento.id_experimento
+**Política:** RESTRICT
+**Justificación:** un modelo entrenado es un resultado valioso; no debe desaparecer solo porque se borra el experimento que lo originó.
+
+### metrica.id_modelo → modelo.id_modelo
+**Política:** CASCADE
+**Justificación:** una métrica no tiene significado independiente del modelo que evalúa.
+
+## Auditoría de normalización — Semana 4
+
+Se revisaron las 8 tablas del esquema. Todas cumplen 1FN (valores atómicos,
+sin listas ni datos concatenados en una sola columna). Las tablas puente
+(`participa`, `usar`) tienen llave primaria compuesta pero, al no tener
+atributos propios además de las FK, no presentan dependencias parciales
+(2FN se cumple trivialmente). Ninguna tabla presenta dependencias
+transitivas (3FN), ya que los atributos descriptivos permanecen en la
+entidad a la que pertenecen conceptualmente y las relaciones se resuelven
+mediante llaves foráneas, sin duplicar información entre tablas.
