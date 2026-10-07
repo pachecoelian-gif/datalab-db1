@@ -145,3 +145,42 @@ Los registros de práctica llevan nombres reconocibles (`(practica S06)`, `Proye
 
 **Justificación:**
 Los registros de práctica no se confunden con datos semilla ni con datos reales del equipo, y se pueden limpiar con seguridad. `TRY/CATCH` muestra el número y mensaje del error (547 FK, 2627 UNIQUE) sin interrumpir el script, lo que documenta qué restricción intervino.
+<!-- AGREGAR AL FINAL de documentacion/decisiones.md -->
+
+## Semana 7 — Evolución del esquema de DataLab
+
+**Cambio realizado:**
+1. `ALTER TABLE experimento ADD estado VARCHAR(20) NOT NULL` con `DEFAULT 'planificado' WITH VALUES`.
+2. `ADD CONSTRAINT chk_experimento_estado CHECK` con los cuatro estados permitidos.
+3. `ALTER TABLE dataset ADD notas VARCHAR(MAX) NULL`.
+4. `UPDATE experimento SET estado = 'exitoso' WHERE id_experimento = 1`.
+5. `ADD CONSTRAINT uq_proyecto_nombre UNIQUE (nombre)` en `proyecto`.
+6. `ALTER COLUMN nombre VARCHAR(200) NOT NULL` en `dataset`.
+7. Práctica de `sp_rename`, `DROP COLUMN` y `DROP TABLE` solo sobre `tabla_prueba_drop`.
+
+**Motivo:**
+El equipo de DataLab necesita conocer el estado de cada experimento y registrar observaciones libres sobre cada dataset. La base ya contiene datos, por lo que el esquema se evoluciona con `ALTER TABLE` en lugar de reconstruir las tablas con `CREATE TABLE`.
+
+**Problema encontrado:**
+- Agregar `estado` como `NOT NULL` sin valor por defecto falla cuando `experimento` ya tiene filas: SQL Server no sabe qué valor asignarles (error 4901).
+- Un `CHECK` agregado sobre datos que no cumplen la regla es rechazado (error 547). Por eso se verificó primero que no hubiera estados fuera de la lista.
+- `UNIQUE` falla si ya hay valores repetidos; se ejecutó antes la consulta con `GROUP BY ... HAVING COUNT(*) > 1`.
+- La prueba `UPDATE ... SET estado = 'terminado'` fue rechazada por el `CHECK` (error 547), lo que confirmó que la regla funciona.
+- `MODIFY COLUMN` y `CHANGE COLUMN` de los documentos fuente son sintaxis de MySQL; en SQL Server se usan `ALTER COLUMN` y `sp_rename`. Además, `ALTER COLUMN` debe repetir `NOT NULL`, de lo contrario la columna pasaría a aceptar NULL.
+
+**Solución:**
+- `DEFAULT 'planificado' WITH VALUES` para que las filas existentes reciban un valor válido.
+- Flujo para restricciones sobre datos existentes: detectar datos inválidos → corregir con `UPDATE` → agregar la restricción → verificar.
+- Equivalencias de dialecto: `ALTER COLUMN` y `EXEC sp_rename`.
+- Bloques separados con `GO` y protegidos con `IF`, para que el script sea re-ejecutable.
+
+**Restricciones afectadas:**
+- Nuevas: `df_experimento_estado`, `chk_experimento_estado`, `uq_proyecto_nombre`.
+- Sin cambios en llaves primarias ni foráneas.
+
+**Impacto sobre datos existentes:**
+- Todas las filas de `experimento` quedaron con `estado = 'planificado'`; luego el experimento 1 pasó a `'exitoso'`.
+- Las filas de `dataset` quedaron con `notas = NULL`.
+- No se perdió ni se modificó ningún otro dato.
+- No se eliminó ninguna tabla real; `DROP` se aplicó solo a `tabla_prueba_drop`.
+- Commit: `ddl: evolucion del esquema de DataLab (estado en experimento, notas en dataset)`.
