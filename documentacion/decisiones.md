@@ -75,3 +75,73 @@ atributos propios además de las FK, no presentan dependencias parciales
 transitivas (3FN), ya que los atributos descriptivos permanecen en la
 entidad a la que pertenecen conceptualmente y las relaciones se resuelven
 mediante llaves foráneas, sin duplicar información entre tablas.
+
+---
+
+## Semana 6/7 — Decisiones sobre operaciones DML
+
+> **Cómo usar este archivo:** pega este bloque **al final** de tu `documentacion/decisiones.md` existente (no reemplaces lo que ya tienes). Si el archivo aún no existe, créalo con este contenido.
+
+### DML-01 — SELECT antes de UPDATE y DELETE
+
+**Decisión:**
+Se utiliza `SELECT` antes de `UPDATE` y `DELETE`.
+
+**Justificación:**
+Permite verificar previamente qué registros serán afectados y reducir el riesgo de modificar o eliminar información incorrecta. El `SELECT` usa exactamente la misma condición `WHERE` que la operación posterior.
+
+### DML-02 — SELECT de verificación después de cada modificación
+
+**Decisión:**
+Toda operación `INSERT`, `UPDATE` o `DELETE` va seguida de un `SELECT` que comprueba su efecto.
+
+**Justificación:**
+Convierte `SELECT` en herramienta de validación y deja evidencia del proceso en el script, no solo del resultado final (ciclo `SELECT → INSERT → SELECT → UPDATE → SELECT → DELETE → SELECT`).
+
+### DML-03 — Nunca `UPDATE` ni `DELETE` sin `WHERE`
+
+**Decisión:**
+Ningún `UPDATE` ni `DELETE` del proyecto se escribe sin cláusula `WHERE`.
+
+**Justificación:**
+Sin `WHERE` la instrucción afecta todas las filas de la tabla (por ejemplo, todos los proyectos). El `WHERE` limita la operación a los registros de práctica.
+
+### DML-04 — No insertar valores en columnas `IDENTITY`
+
+**Decisión:**
+En los `INSERT` no se incluyen `id_proyecto`, `id_cientifico`, `id_dataset` ni `id_experimento`; los genera `IDENTITY(1,1)`.
+
+**Justificación:**
+Evita conflictos de PK y respeta el diseño del modelo: el identificador es responsabilidad del motor, no de quien inserta.
+
+### DML-05 — Resolver las FK por clave natural, no por ID escrito a mano
+
+**Decisión:**
+Para crear un `experimento`, `id_proyecto` e `id_cientifico` se obtienen con una consulta por nombre del proyecto y correo del científico (`INSERT ... SELECT`).
+
+**Justificación:**
+Hace el script reproducible aunque `IDENTITY` genere otros números, y garantiza que las referencias existan antes de insertar.
+
+### DML-06 — Orden de inserción según las claves foráneas
+
+**Decisión:**
+Los datos relacionados se insertan en el orden `cientifico_datos → proyecto → dataset → experimento`, y se eliminan en orden inverso (hijos antes que padres).
+
+**Justificación:**
+`experimento` depende de `proyecto` y de `cientifico_datos`; un hijo no puede existir sin su padre. El orden inverso en `DELETE` evita violar la integridad referencial.
+
+### DML-07 — Transacciones con `ROLLBACK` para pruebas riesgosas
+
+**Decisión:**
+Las pruebas con riesgo (`UPDATE` de prueba y `DELETE` de un proyecto con experimentos) se ejecutan dentro de `BEGIN TRANSACTION` y terminan en `ROLLBACK`; los cambios que se desean conservar se confirman con `COMMIT`.
+
+**Justificación:**
+Permite observar el efecto de una operación sin perder datos, y la política `ON DELETE` puede probarse sin importar si es `NO ACTION` o `CASCADE`.
+
+### DML-08 — Datos de práctica identificables y errores capturados con `TRY/CATCH`
+
+**Decisión:**
+Los registros de práctica llevan nombres reconocibles (`(practica S06)`, `Proyecto Temporal DELETE S06`, `Proyecto CRUD DataLab`) y las pruebas de integridad se envuelven en `BEGIN TRY ... BEGIN CATCH`.
+
+**Justificación:**
+Los registros de práctica no se confunden con datos semilla ni con datos reales del equipo, y se pueden limpiar con seguridad. `TRY/CATCH` muestra el número y mensaje del error (547 FK, 2627 UNIQUE) sin interrumpir el script, lo que documenta qué restricción intervino.
