@@ -99,3 +99,43 @@ Además, ya dejé definido cómo se van a conectar las tablas entre sí utilizan
 | metrica | nombre_metrica | VARCHAR(50) | NOT NULL | — |
 | metrica | valor | DECIMAL(5,4) | NOT NULL, CHECK valor BETWEEN 0 AND 1 | — |
 | metrica | fecha_calculo | DATE | NOT NULL | — |
+
+<!-- AGREGAR AL FINAL de documentacion/diccionario_datos.md
+     (y actualizar allí las filas de experimento, dataset y proyecto) -->
+
+## Actualización Semana 7 — Evolución del esquema
+
+**Script:** `scripts/ddl/s07-evolucion-esquema.sql`
+
+### Columnas nuevas
+
+```text
+experimento
+└── estado
+
+dataset
+└── notas
+```
+
+| Tabla | Columna | Tipo | ¿NULL? | DEFAULT | Restricción | Descripción |
+|---|---|---|---|---|---|---|
+| `experimento` | `estado` | `VARCHAR(20)` | No | `'planificado'` (`df_experimento_estado`) | `chk_experimento_estado` | Estado del ciclo de vida del experimento. Valores permitidos: `planificado`, `en_ejecucion`, `exitoso`, `fallido`. |
+| `dataset` | `notas` | `VARCHAR(MAX)` | Sí | — | — | Observaciones libres sobre el dataset. Es opcional, por eso admite NULL. |
+
+### Columnas modificadas
+
+| Tabla | Columna | Antes | Después | Motivo |
+|---|---|---|---|---|
+| `dataset` | `nombre` | `VARCHAR(100) NOT NULL` | `VARCHAR(200) NOT NULL` | Los nombres descriptivos de datasets (versión, origen, año) pueden superar 100 caracteres. Solo se amplía: no hay pérdida de datos. |
+
+### Restricciones nuevas
+
+| Nombre | Tabla | Tipo | Regla | Justificación |
+|---|---|---|---|---|
+| `df_experimento_estado` | `experimento` | DEFAULT | `estado = 'planificado'` si el `INSERT` no lo indica | Permite agregar una columna `NOT NULL` sobre filas existentes y simplifica los nuevos registros. |
+| `chk_experimento_estado` | `experimento` | CHECK | `estado IN ('planificado','en_ejecucion','exitoso','fallido')` | Impide estados inventados o mal escritos (por ejemplo `terminado`). |
+| `uq_proyecto_nombre` | `proyecto` | UNIQUE | No pueden existir dos proyectos con el mismo `nombre` | Evita proyectos duplicados que confundan a los equipos. |
+
+### Objetos de práctica (no forman parte del modelo)
+
+`tabla_prueba_drop` se crea y se elimina dentro del mismo script. No queda en la base de datos final.
