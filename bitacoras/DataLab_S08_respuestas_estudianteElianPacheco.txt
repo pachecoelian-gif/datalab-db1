@@ -1,0 +1,309 @@
+DataLab - Semana 8 | Plantilla de respuestas
+Estudiante: estudianteElianPacheco
+
+EJERCICIO 1
+Consulta / respuesta:
+SELECT id_proyecto, nombre_proyecto
+FROM dbo.proyecto;
+Observaciones:
+Lista los 100 proyectos con solo id y nombre; evito SELECT * para traer únicamente lo necesario.
+
+----------------------------------------
+
+EJERCICIO 2
+Consulta / respuesta:
+SELECT id_dataset, nombre, fuente
+FROM dbo.dataset
+WHERE fuente = 'externa';
+Observaciones:
+Filtra con = y deja los 50 datasets de fuente externa (los ids impares de la semilla).
+
+----------------------------------------
+
+EJERCICIO 3
+Consulta / respuesta:
+SELECT id_metrica, nombre_metrica, valor
+FROM dbo.metrica
+WHERE valor >= 0.80;
+Observaciones:
+Devuelve 75 de las 200 métricas, las de buen desempeño. Con >= el 0.80 exacto también entra.
+
+----------------------------------------
+
+EJERCICIO 4
+Consulta / respuesta:
+SELECT id_metrica, nombre_metrica, valor
+FROM dbo.metrica
+WHERE valor BETWEEN 0.70 AND 0.90;
+Observaciones:
+BETWEEN incluye los extremos (equivale a >= 0.70 AND <= 0.90). Salen 104 métricas, algo más de la mitad.
+
+----------------------------------------
+
+EJERCICIO 5
+Consulta / respuesta:
+SELECT id_dataset, nombre, fuente
+FROM dbo.dataset
+WHERE fuente IN ('interna', 'externa');
+Observaciones:
+IN funciona como un OR entre las dos fuentes. Devuelve los 100 datasets porque el CHECK de la tabla solo admite 'interna' y 'externa', así que aquí el filtro no descarta nada.
+
+----------------------------------------
+
+EJERCICIO 6
+Consulta / respuesta:
+SELECT id_dataset, nombre
+FROM dbo.dataset
+WHERE nombre LIKE 'EEG%';
+Observaciones:
+El % admite cualquier texto después de 'EEG'. Salen 25 datasets (los ids múltiplos de 4).
+
+----------------------------------------
+
+EJERCICIO 7
+Consulta / respuesta:
+-- Datasets con tamaño desconocido
+SELECT id_dataset, nombre, tamanio_filas
+FROM dbo.dataset
+WHERE tamanio_filas IS NULL;
+
+-- Datasets con tamaño informado
+SELECT id_dataset, nombre, tamanio_filas
+FROM dbo.dataset
+WHERE tamanio_filas IS NOT NULL;
+Observaciones:
+NULL es un valor desconocido, no cero, así que se usa IS NULL y no = NULL. Hay 10 datasets sin tamaño (ids 10, 20 ... 100) y 90 con tamaño.
+
+----------------------------------------
+
+EJERCICIO 8
+Consulta / respuesta:
+SELECT id_dataset, nombre, fuente, fecha_carga
+FROM dbo.dataset
+WHERE fuente = 'externa'
+  AND fecha_carga >= '20260101';
+Observaciones:
+AND exige las dos condiciones. Escribí la fecha como '20260101' porque ese formato se interpreta igual en cualquier configuración de SQL Server. Salen los 50 externos, ya que todos se cargaron después de enero; el conteo depende del día en que se corra la semilla.
+
+----------------------------------------
+
+EJERCICIO 9
+Consulta / respuesta:
+-- Con NOT
+SELECT id_dataset, nombre, fuente
+FROM dbo.dataset
+WHERE NOT fuente = 'externa';
+
+-- Con <>
+SELECT id_dataset, nombre, fuente
+FROM dbo.dataset
+WHERE fuente <> 'externa';
+Observaciones:
+Ambas formas dan las mismas 50 filas (datasets internos): NOT fuente = 'externa' y fuente <> 'externa' son equivalentes. Tampoco hay diferencia por NULL porque fuente es NOT NULL.
+
+----------------------------------------
+
+EJERCICIO 10
+Consulta / respuesta:
+SELECT nombre, fecha_carga
+FROM dbo.dataset
+ORDER BY fecha_carga DESC;
+Observaciones:
+DESC deja primero la carga más reciente (dataset 1) y al final la más antigua (dataset 100).
+
+----------------------------------------
+
+EJERCICIO 11
+Consulta / respuesta:
+SELECT nombre, fuente, fecha_carga
+FROM dbo.dataset
+ORDER BY fuente ASC, fecha_carga DESC;
+Observaciones:
+Primero se ordena por fuente (las 50 externas y luego las 50 internas) y, dentro de cada una, por fecha de la más reciente a la más antigua.
+
+----------------------------------------
+
+EJERCICIO 12
+Consulta / respuesta:
+SELECT COUNT(*) AS total_datasets
+FROM dbo.dataset;
+Observaciones:
+COUNT(*) cuenta todas las filas, incluso con columnas NULL. Resultado: 100 datasets.
+
+----------------------------------------
+
+EJERCICIO 13
+Consulta / respuesta:
+SELECT AVG(valor) AS promedio,
+       MIN(valor) AS minimo,
+       MAX(valor) AS maximo
+FROM dbo.metrica;
+Observaciones:
+Resume las 200 métricas en una fila: promedio ≈ 0.7539, mínimo 0.55 y máximo 0.98. El promedio global ya queda por debajo de 0.80.
+
+----------------------------------------
+
+EJERCICIO 14
+Consulta / respuesta:
+SELECT fuente, COUNT(*) AS cantidad_datasets
+FROM dbo.dataset
+GROUP BY fuente;
+Observaciones:
+GROUP BY arma un grupo por fuente y COUNT(*) lo cuenta: 50 externa y 50 interna, un reparto parejo.
+
+----------------------------------------
+
+EJERCICIO 15
+Consulta / respuesta:
+SELECT nombre_metrica, AVG(valor) AS promedio
+FROM dbo.metrica
+GROUP BY nombre_metrica;
+Observaciones:
+Dos filas: accuracy ≈ 0.7927 y precision ≈ 0.7150. La exactitud promedia más alta que la precisión.
+
+----------------------------------------
+
+EJERCICIO 16
+Consulta / respuesta:
+SELECT nombre_metrica, AVG(valor) AS promedio
+FROM dbo.metrica
+GROUP BY nombre_metrica
+HAVING AVG(valor) > 0.80;
+Observaciones:
+AVG no puede ir en WHERE porque este filtra fila por fila antes de agrupar, cuando el promedio todavía no existe (SQL Server da el error 147). HAVING filtra los grupos ya calculados. Con la semilla devuelve 0 filas porque ningún promedio supera 0.80; es un resultado válido, no un error.
+
+----------------------------------------
+
+EJERCICIO 17
+Consulta / respuesta:
+INSERT INTO dbo.proyecto (nombre_proyecto, descripcion)
+VALUES (N'Proyecto de práctica S08',
+        N'Registro temporal para practicar DML.');
+
+SELECT id_proyecto, nombre_proyecto, descripcion
+FROM dbo.proyecto
+WHERE nombre_proyecto = N'Proyecto de práctica S08';
+Observaciones:
+No se indica id_proyecto porque es IDENTITY y SQL Server lo genera (sería 101). La N marca el texto como Unicode por la tilde de 'práctica'. El SELECT confirma que quedó 1 fila.
+
+----------------------------------------
+
+EJERCICIO 18
+Consulta / respuesta:
+-- Antes
+SELECT id_proyecto, nombre_proyecto, descripcion
+FROM dbo.proyecto
+WHERE nombre_proyecto = N'Proyecto de práctica S08';
+
+UPDATE dbo.proyecto
+SET descripcion = N'Descripcion actualizada durante la practica S08.'
+WHERE nombre_proyecto = N'Proyecto de práctica S08';
+
+-- Después
+SELECT id_proyecto, nombre_proyecto, descripcion
+FROM dbo.proyecto
+WHERE nombre_proyecto = N'Proyecto de práctica S08';
+Observaciones:
+El SELECT previo confirma que el WHERE apunta a una sola fila, el UPDATE reporta 1 fila afectada y el SELECT final muestra la nueva descripción. Sin WHERE se habrían modificado todos los proyectos.
+
+----------------------------------------
+
+EJERCICIO 19
+Consulta / respuesta:
+-- Antes
+SELECT id_proyecto, nombre_proyecto
+FROM dbo.proyecto
+WHERE nombre_proyecto = N'Proyecto de práctica S08';
+
+DELETE FROM dbo.proyecto
+WHERE nombre_proyecto = N'Proyecto de práctica S08';
+
+-- Después (debe devolver 0 filas)
+SELECT id_proyecto, nombre_proyecto
+FROM dbo.proyecto
+WHERE nombre_proyecto = N'Proyecto de práctica S08';
+Observaciones:
+El nombre exacto protege los proyectos semilla. El SELECT previo muestra 1 fila y el final 0. Este proyecto no tiene hijos, así que el ON DELETE CASCADE no borra nada más.
+
+----------------------------------------
+
+EJERCICIO 20
+Consulta / respuesta:
+SELECT nombre_metrica, AVG(valor) AS promedio
+FROM dbo.metrica
+GROUP BY nombre_metrica
+HAVING AVG(valor) > 0.80;
+Observaciones:
+Solo usa la tabla metrica, sin JOIN ni subconsultas. Devuelve 0 filas: accuracy (≈ 0.7927) y precision (≈ 0.7150) quedan por debajo de 0.80, o sea que los modelos aún no alcanzan ese umbral de calidad.
+
+----------------------------------------
+
+PREGUNTA DE NEGOCIO 1
+Consulta:
+SELECT fuente, COUNT(*) AS cantidad_datasets
+FROM dbo.dataset
+GROUP BY fuente;
+Interpretación:
+50 datasets externos y 50 internos: el catálogo está repartido por igual.
+
+----------------------------------------
+
+PREGUNTA DE NEGOCIO 2
+Consulta:
+SELECT id_dataset, nombre, tamanio_filas
+FROM dbo.dataset
+WHERE tamanio_filas IS NULL;
+Interpretación:
+Son 10 datasets (ids 10, 20 ... 100) sin tamaño registrado; falta completar ese dato.
+
+----------------------------------------
+
+PREGUNTA DE NEGOCIO 3
+Consulta:
+SELECT MAX(tamanio_filas) AS tamanio_maximo
+FROM dbo.dataset;
+Interpretación:
+El máximo informado es 123 750 filas (dataset 99). El dataset 100 sería mayor, pero su tamaño es NULL y MAX lo ignora.
+
+----------------------------------------
+
+PREGUNTA DE NEGOCIO 4
+Consulta:
+SELECT nombre_metrica, AVG(valor) AS promedio
+FROM dbo.metrica
+GROUP BY nombre_metrica;
+Interpretación:
+accuracy ≈ 0.7927 y precision ≈ 0.7150.
+
+----------------------------------------
+
+PREGUNTA DE NEGOCIO 5
+Consulta:
+SELECT nombre_metrica, AVG(valor) AS promedio
+FROM dbo.metrica
+GROUP BY nombre_metrica
+HAVING AVG(valor) > 0.80;
+Interpretación:
+Ninguno: devuelve 0 filas porque accuracy (≈ 0.7927) no llega a 0.80 y precision queda más abajo.
+
+----------------------------------------
+
+PREGUNTA DE NEGOCIO 6
+Consulta:
+SELECT algoritmo, COUNT(*) AS cantidad_modelos
+FROM dbo.modelo
+GROUP BY algoritmo;
+Interpretación:
+Cinco algoritmos con 20 modelos cada uno (100 en total).
+
+----------------------------------------
+
+PREGUNTA DE NEGOCIO 7
+Consulta:
+SELECT id_modelo, nombre, version, algoritmo
+FROM dbo.modelo
+WHERE version LIKE '1.2%';
+Interpretación:
+20 modelos (ids 2, 7, 12, ...), todos Random Forest, porque en la semilla la versión 1.2.0 y el algoritmo salen del mismo id_modelo % 5 = 2.
+
+----------------------------------------
