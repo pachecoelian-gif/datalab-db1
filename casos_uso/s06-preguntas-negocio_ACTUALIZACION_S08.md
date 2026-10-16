@@ -3,12 +3,6 @@
 
 # Actualización Semana 8 — Preguntas de negocio resueltas con filtros y agregación
 
-> **Instrucción de uso:** pega este bloque AL FINAL de `casos_uso/s06-preguntas-negocio.md`. No reemplaces el contenido anterior.
-> Las líneas marcadas con `⟵ PEGAR` deben llenarse con la salida real que obtengas en SSMS (copiar la tabla de resultados), porque dependen de tus datos semilla.
-> Consultas ejecutadas desde: `scripts/consultas/s08-filtros-orden-agregacion.sql`
-
----
-
 ## Actividad 16 — Pregunta de la Semana 6 retomada
 
 **Pregunta:**
@@ -170,3 +164,18 @@ ORDER BY filas_totales DESC;
 
 **Interpretación:**
 Cada fila es una fuente con más de un millón de filas acumuladas. Cumple los cuatro requisitos: tiene contexto de negocio, es verificable contra los datos, usa SQL y su respuesta (qué fuente pesa más) es interpretable. Usa solo conceptos hasta la Semana 8 (sin `JOIN`). Nota: `SUM` ignora los `tamanio_filas` NULL.
+
+# Preguntas de negocio DataLab — estado al cierre del Hito 3 (Semana 9)
+
+| # | Pregunta de negocio | Estado | Consulta / evidencia | Observación |
+|---|---------------------|--------|----------------------|-------------|
+| 1 | ¿Qué proyectos tienen experimentos? | ✅ Resuelta | Ej. 1 y Ej. 17 | `INNER JOIN` proyecto–experimento |
+| 2 | ¿Qué científicos han ejecutado experimentos recientemente? | ✅ Resuelta | Ej. 2 y consulta H3-B | Filtro `fecha_ejecucion >= '20260101'` |
+| 3 | ¿Qué datasets nunca se han usado? | ✅ Resuelta | Ej. 13, Ej. 20 y vista `vista_datasets_sin_uso` | `LEFT JOIN … IS NULL` y `NOT IN` |
+| 4 | ¿Cuáles son los modelos con mejor desempeño? | ✅ Resuelta | Ej. 11 y Ej. 16 | Ranking de *accuracy* y métricas sobre el promedio |
+| 5 | ¿Qué proyectos no tienen modelos? | ⏳ Pendiente | Ej. 6 y Ej. 18 (parcial) | Requiere proyecto → experimento → modelo (3 tablas), lo que excede la regla de máximo dos tablas |
+| 6 | ¿Qué datasets son más grandes que el promedio? | ✅ Resuelta | Ej. 14 | Subconsulta escalar con `AVG` |
+| 7 | ¿Qué científicos tienen más métricas registradas? | ⏳ Pendiente | — | Requiere científico → experimento → modelo → métrica (4 tablas) |
+
+**Cierre del Hito 3:** 5 de 7 preguntas resueltas; las 2 pendientes requieren más de
+dos tablas y quedan programadas para la siguiente etapa del proyecto.
