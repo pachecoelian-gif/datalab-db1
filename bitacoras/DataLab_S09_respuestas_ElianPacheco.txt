@@ -1,0 +1,323 @@
+DataLab - Semana 9 | Respuestas
+Estudiante: ElianPacheco
+
+EJERCICIO 1
+Consulta SQL:
+SELECT p.nombre_proyecto,
+       e.id_experimento,
+       e.fecha_ejecucion
+FROM dbo.proyecto AS p
+INNER JOIN dbo.experimento AS e
+    ON e.id_proyecto = p.id_proyecto;
+Resultado e interpretación:
+Resultado: 100 filas. Cada proyecto aparece una sola vez: Proyecto DataLab 001 con el experimento 1, el 002 con el 2, y así hasta el 100.
+
+Interpretación: Junté proyecto con experimento usando id_proyecto, que es lo que los conecta. Salieron 100 filas porque en mis datos cada proyecto tiene exactamente un experimento. Si hubiera un proyecto sin experimentos no aparecería, porque INNER JOIN solo muestra lo que tiene pareja en las dos tablas.
+
+----------------------------------------
+
+EJERCICIO 2
+Consulta SQL:
+SELECT c.nombre AS nombre_cientifico,
+       e.fecha_ejecucion
+FROM dbo.cientifico_datos AS c
+INNER JOIN dbo.experimento AS e
+    ON e.id_cientifico = c.id_cientifico;
+Resultado e interpretación:
+Resultado: 100 filas: Cientifico 001 con la fecha de su experimento, Cientifico 002 con la suya, y así sucesivamente.
+
+Interpretación: Uní cientifico_datos con experimento por id_cientifico para saber quién hizo cada experimento y cuándo. Salen 100 filas porque cada científico ejecutó un solo experimento, así que nadie se repite. Un científico sin experimentos se quedaría por fuera.
+
+----------------------------------------
+
+EJERCICIO 3
+Consulta SQL:
+SELECT m.nombre AS nombre_modelo,
+       m.algoritmo,
+       e.id_experimento
+FROM dbo.modelo AS m
+INNER JOIN dbo.experimento AS e
+    ON e.id_experimento = m.id_experimento;
+Resultado e interpretación:
+Resultado: 100 filas. Por ejemplo: Modelo predictivo 001 (Arbol de decision) del experimento 1 y Modelo predictivo 002 (Random Forest) del experimento 2.
+
+Interpretación: Relacioné cada modelo con el experimento del que salió usando id_experimento. Me muestra el nombre del modelo, su algoritmo y el experimento de origen. Salieron 100 porque cada experimento tiene su propio modelo (relación uno a uno).
+
+----------------------------------------
+
+EJERCICIO 4
+Consulta SQL:
+SELECT m.nombre AS nombre_modelo,
+       met.nombre_metrica,
+       met.valor
+FROM dbo.modelo AS m
+INNER JOIN dbo.metrica AS met
+    ON met.id_modelo = m.id_modelo;
+Resultado e interpretación:
+Resultado: 200 filas: dos métricas por modelo, accuracy y precision. Por ejemplo, Modelo predictivo 001 tiene accuracy 0.67 y precision 0.66.
+
+Interpretación: Junté modelo con metrica por id_modelo para ver qué indicadores tiene cada modelo y cuánto valen. Salen 200 filas porque cada uno de los 100 modelos tiene dos métricas, y por eso el nombre del modelo se repite dos veces.
+
+----------------------------------------
+
+EJERCICIO 5
+Consulta SQL:
+SELECT e.id_experimento,
+       m.nombre AS nombre_modelo
+FROM dbo.experimento AS e
+LEFT JOIN dbo.modelo AS m
+    ON m.id_experimento = e.id_experimento;
+Resultado e interpretación:
+Resultado: 100 filas, ninguna con NULL: todos los experimentos tienen modelo.
+
+Interpretación: Usé LEFT JOIN con experimento a la izquierda para que salgan todos los experimentos, tengan modelo o no. Si alguno no tuviera, la columna del modelo saldría en NULL. En mis datos no hay ninguno así, porque cada experimento ya tiene su modelo, pero la consulta me deja ver todo sin perder nada.
+
+----------------------------------------
+
+EJERCICIO 6
+Consulta SQL:
+SELECT p.nombre_proyecto,
+       e.id_experimento
+FROM dbo.proyecto AS p
+LEFT JOIN dbo.experimento AS e
+    ON e.id_proyecto = p.id_proyecto;
+Resultado e interpretación:
+Resultado: 100 filas, ninguna con NULL: todos los proyectos tienen un experimento.
+
+Interpretación: Es la misma idea pero con proyectos: LEFT JOIN con proyecto a la izquierda para que aparezcan todos. Los proyectos sin experimentos saldrían con NULL en el identificador, pero en mis datos no hay ninguno, todos tienen su experimento. Por eso el resultado se ve igual al del ejercicio 1.
+
+----------------------------------------
+
+EJERCICIO 7
+Consulta SQL:
+SELECT e.id_experimento,
+       e.fecha_ejecucion
+FROM dbo.experimento AS e
+LEFT JOIN dbo.modelo AS m
+    ON m.id_experimento = e.id_experimento
+WHERE m.id_modelo IS NULL;
+Resultado e interpretación:
+Resultado: 0 filas.
+
+Interpretación: Partí del LEFT JOIN del ejercicio 5 y agregué WHERE m.id_modelo IS NULL para quedarme solo con los experimentos que no encontraron modelo. Me dio 0 filas, y es una buena noticia: significa que todos los experimentos ya tienen un modelo asociado. La consulta funciona, simplemente no hay nada pendiente.
+
+----------------------------------------
+
+EJERCICIO 8
+Consulta SQL:
+SELECT c.nombre AS nombre_cientifico,
+       e.fecha_ejecucion
+FROM dbo.cientifico_datos AS c
+RIGHT JOIN dbo.experimento AS e
+    ON e.id_cientifico = c.id_cientifico;
+Resultado e interpretación:
+Resultado: 100 filas, ninguna con el nombre del científico en NULL.
+
+Interpretación: Aquí usé RIGHT JOIN, que conserva todas las filas de la tabla de la derecha, o sea experimento. Salieron los 100 experimentos con el nombre de su científico. Si algún experimento no tuviera científico, aparecería con NULL. Es lo mismo que un LEFT JOIN con las tablas al revés, y la tabla que se conserva es experimento.
+
+----------------------------------------
+
+EJERCICIO 9
+Consulta SQL:
+SELECT m.nombre,
+       m.version,
+       m.algoritmo
+FROM dbo.modelo AS m
+WHERE m.algoritmo = 'Random Forest';
+Resultado e interpretación:
+Resultado: 20 filas, todas Random Forest y de versión 1.2.0 (Modelo predictivo 002, 007, 012, y así de cinco en cinco).
+
+Interpretación: No necesité unir tablas: filtré modelo con WHERE algoritmo = 'Random Forest'. Salieron 20 modelos, uno de cada cinco, porque los cinco algoritmos se reparten en rotación entre los 100 modelos.
+
+----------------------------------------
+
+EJERCICIO 10
+Consulta SQL:
+SELECT p.nombre_proyecto,
+       e.fecha_ejecucion
+FROM dbo.proyecto AS p
+INNER JOIN dbo.experimento AS e
+    ON e.id_proyecto = p.id_proyecto
+WHERE e.fecha_ejecucion >= '20260101'
+ORDER BY e.fecha_ejecucion;
+Resultado e interpretación:
+Resultado: 100 filas: con los datos semilla todos los experimentos quedan fechados en 2026. Salen ordenados de la fecha más antigua a la más reciente.
+
+Interpretación: Uní proyecto con experimento y filtré con fecha_ejecucion >= '20260101'. Escribí la fecha pegada (año, mes, día) para que SQL Server la entienda sin importar el idioma. Como los datos de prueba se generaron con fechas recientes, ningún experimento queda fuera del filtro y salen los 100.
+
+----------------------------------------
+
+EJERCICIO 11
+Consulta SQL:
+SELECT m.nombre AS nombre_modelo,
+       met.nombre_metrica,
+       met.valor
+FROM dbo.modelo AS m
+INNER JOIN dbo.metrica AS met
+    ON met.id_modelo = m.id_modelo
+WHERE met.nombre_metrica = 'accuracy'
+ORDER BY met.valor DESC;
+Resultado e interpretación:
+Resultado: 100 filas, una accuracy por modelo. Los primeros lugares son Modelo predictivo 011, 050 y 089, empatados con 0.98.
+
+Interpretación: Junté modelo con metrica, dejé solo las métricas accuracy y las ordené de mayor a menor. Los mejores modelos son el 011, el 050 y el 089, con 0.98 cada uno, y los más bajos están cerca de 0.60. Esta consulta responde la pregunta de negocio de cuáles son los modelos con mejor desempeño.
+
+----------------------------------------
+
+EJERCICIO 12
+Consulta SQL:
+SELECT m.nombre,
+       m.algoritmo
+FROM dbo.modelo AS m
+WHERE m.version LIKE '1.2%'
+ORDER BY m.nombre;
+Resultado e interpretación:
+Resultado: 20 filas, todas Random Forest.
+
+Interpretación: Usé LIKE '1.2%' para traer los modelos cuya versión empieza por 1.2; el % significa que después puede venir cualquier cosa. Salieron 20 modelos y todos son Random Forest, porque en mis datos la versión depende del algoritmo y los de versión 1.2.0 coinciden con ese algoritmo.
+
+----------------------------------------
+
+EJERCICIO 13
+Consulta SQL:
+SELECT d.nombre,
+       d.fuente
+FROM dbo.dataset AS d
+WHERE d.id_dataset NOT IN (
+    SELECT u.id_dataset
+    FROM dbo.uso_dataset AS u
+);
+Resultado e interpretación:
+Resultado: 0 filas.
+
+Interpretación: La subconsulta saca la lista de datasets que sí se han usado y la consulta de afuera deja los que no están en esa lista. Me dio 0 filas: los 100 datasets aparecen en uso_dataset, o sea que ninguno está sin usar. Como id_dataset es llave primaria en uso_dataset, no puede tener NULL y NOT IN es seguro aquí.
+
+----------------------------------------
+
+EJERCICIO 14
+Consulta SQL:
+SELECT d.nombre,
+       d.tamanio_filas
+FROM dbo.dataset AS d
+WHERE d.tamanio_filas > (
+    SELECT AVG(d2.tamanio_filas)
+    FROM dbo.dataset AS d2
+);
+Resultado e interpretación:
+Resultado: 45 filas. El promedio de tamanio_filas es 62.500 y los datasets que lo superan van desde Sensores_IoT_051 (63.750 filas) hasta Sensores_IoT_099 (123.750 filas).
+
+Interpretación: La subconsulta de adentro calcula un solo número, el promedio del tamaño de los datasets, que da 62.500, y la consulta de afuera deja los datasets más grandes que ese valor. Salieron 45. Los datasets con tamaño NULL (uno de cada diez) no entran al promedio ni al resultado, porque comparar con NULL nunca da verdadero.
+
+----------------------------------------
+
+EJERCICIO 15
+Consulta SQL:
+SELECT m.nombre,
+       m.algoritmo,
+       m.version
+FROM dbo.modelo AS m
+WHERE m.id_experimento IN (
+    SELECT e.id_experimento
+    FROM dbo.experimento AS e
+    WHERE e.id_proyecto = 10
+);
+Resultado e interpretación:
+Resultado: 1 fila: Modelo predictivo 010, Regresion logistica, versión 1.0.0.
+
+Interpretación: Primero la subconsulta con IN busca los experimentos del proyecto 10 y luego traigo los modelos de esos experimentos. Como cada proyecto tiene un solo experimento y cada experimento un solo modelo, sale una sola fila: el Modelo predictivo 010.
+
+----------------------------------------
+
+EJERCICIO 16
+Consulta SQL:
+SELECT met.id_modelo,
+       met.nombre_metrica,
+       met.valor
+FROM dbo.metrica AS met
+WHERE met.valor > (
+    SELECT AVG(met2.valor)
+    FROM dbo.metrica AS met2
+);
+Resultado e interpretación:
+Resultado: 110 filas (60 de accuracy y 50 de precision). El promedio global de las métricas es aproximadamente 0.754.
+
+Interpretación: La subconsulta calcula el promedio de todos los valores de metrica, alrededor de 0.754, y la consulta principal muestra las métricas que lo superan. Salieron 110 de las 200, un poco más de la mitad. Sirve para ver qué resultados están por encima de lo normal.
+
+----------------------------------------
+
+EJERCICIO 17
+Consulta SQL:
+SELECT p.nombre_proyecto,
+       COUNT(e.id_experimento) AS total_experimentos
+FROM dbo.proyecto AS p
+INNER JOIN dbo.experimento AS e
+    ON e.id_proyecto = p.id_proyecto
+GROUP BY p.id_proyecto, p.nombre_proyecto
+ORDER BY total_experimentos DESC;
+Resultado e interpretación:
+Resultado: 100 filas, cada proyecto con total_experimentos = 1.
+
+Interpretación: Uní proyecto con experimento, agrupé por proyecto con GROUP BY y conté los experimentos con COUNT. Todos los proyectos tienen exactamente 1 experimento, así que el total es 1 en las 100 filas. Un proyecto sin experimentos no saldría, porque es INNER JOIN.
+
+----------------------------------------
+
+EJERCICIO 18
+Consulta SQL:
+SELECT p.nombre_proyecto,
+       COUNT(e.id_experimento) AS total_experimentos
+FROM dbo.proyecto AS p
+LEFT JOIN dbo.experimento AS e
+    ON e.id_proyecto = p.id_proyecto
+GROUP BY p.id_proyecto, p.nombre_proyecto
+ORDER BY total_experimentos DESC;
+Resultado e interpretación:
+Resultado: 100 filas, todas con total_experimentos = 1; ningún proyecto con 0.
+
+Interpretación: Igual que el anterior pero con LEFT JOIN, para que aparezcan también los proyectos sin experimentos con un 0. Conté e.id_experimento y no COUNT(*), porque COUNT(*) contaría la fila vacía y daría 1 en vez de 0. Con mis datos no hay proyectos en cero, por eso el resultado coincide con el del ejercicio 17.
+
+----------------------------------------
+
+EJERCICIO 19
+Consulta SQL:
+SELECT m.id_modelo,
+       COUNT(*) AS total_metricas
+FROM dbo.modelo AS m
+INNER JOIN dbo.metrica AS met
+    ON met.id_modelo = m.id_modelo
+GROUP BY m.id_modelo
+HAVING COUNT(*) > 1
+ORDER BY total_metricas DESC;
+Resultado e interpretación:
+Resultado: 100 filas, todas con total_metricas = 2.
+
+Interpretación: Junté modelo con metrica, agrupé por modelo y conté sus métricas. Luego usé HAVING COUNT(*) > 1 para dejar solo los que tienen más de una. Salen los 100 modelos, cada uno con sus 2 métricas (accuracy y precision). Uso HAVING porque el filtro va sobre un conteo, y eso solo se conoce después de agrupar.
+
+----------------------------------------
+
+EJERCICIO 20
+Consulta SQL:
+-- 20-A. LEFT JOIN + IS NULL  (dataset + uso_dataset = 2 tablas)
+SELECT d.id_dataset,
+       d.nombre,
+       d.fuente
+FROM dbo.dataset AS d
+LEFT JOIN dbo.uso_dataset AS u
+    ON u.id_dataset = d.id_dataset
+WHERE u.id_dataset IS NULL;
+-- 20-B. NOT IN  (dataset + uso_dataset = 2 tablas)
+-- El filtro IS NOT NULL protege frente a NULL dentro de la subconsulta.
+SELECT d.id_dataset,
+       d.nombre,
+       d.fuente
+FROM dbo.dataset AS d
+WHERE d.id_dataset NOT IN (
+    SELECT u.id_dataset
+    FROM dbo.uso_dataset AS u
+    WHERE u.id_dataset IS NOT NULL
+);
+Resultado e interpretación:
+Resultado: Las dos consultas devuelven 0 filas.
+
+Interpretación: Resolví lo mismo de dos formas, con LEFT JOIN + IS NULL y con NOT IN, y las dos dieron 0 filas: todos los datasets se han usado al menos una vez. Coinciden, que es lo esperado. Yo elegiría LEFT JOIN + IS NULL porque no se rompe si aparecen NULL; con NOT IN, un solo NULL en la subconsulta haría que no devuelva nada. Por eso en la versión B agregué IS NOT NULL.
+
+----------------------------------------
