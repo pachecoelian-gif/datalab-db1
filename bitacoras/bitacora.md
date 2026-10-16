@@ -252,3 +252,26 @@ Porque el `FK` solo garantiza que el experimento referenciado exista; el `UNIQUE
 - **Diferencias observadas entre MySQL y SQL Server:** [listar]
 - **Ajustes realizados al DDL:** [listar]
 ```
+# Bitácora — Semana 9 (Cierre del Hito 3)
+
+**Estudiante:** Elian Santiago Pacheco Vanegas
+
+## Qué se hizo
+- Estudio de la guía interactiva: INNER/LEFT/RIGHT JOIN, subconsultas (IN, NOT IN, escalares) y vistas.
+- Resolución de los 20 ejercicios en `scripts/consultas/s09-joins-y-negocio.sql`.
+- Creación y prueba de tres vistas en `scripts/ddl/s09-vistas.sql`.
+- Diligenciamiento de la plantilla de respuestas en `documentacion/s09-plantilla-respuestas.docx`.
+- Actualización del estado de las preguntas de negocio en `casos_uso/s06-preguntas-negocio.md`.
+
+## Decisiones técnicas
+- Máximo dos tablas por consulta, incluidas las subconsultas.
+- `COUNT(e.id_experimento)` en lugar de `COUNT(*)` en los LEFT JOIN para que los proyectos sin experimentos den 0.
+- En `NOT IN` se añade `IS NOT NULL` en la subconsulta para evitar resultados vacíos por NULL.
+- Fechas en formato ISO (`'20260101'`) para no depender del idioma de SQL Server.
+
+## Pendiente
+- Preguntas 5 y 7 del Hito 3: requieren tres o más tablas, fuera de la regla de esta semana.
+
+## Commit y tag
+- Commit: `consulta: JOIN, subconsultas y vistas - cierre Hito 3`
+- Tag: `h3-consultas-sql`
