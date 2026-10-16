@@ -9,15 +9,15 @@
    Cada consulta usa como MAXIMO dos tablas, contando las tablas
    que aparecen dentro de subconsultas.
 
-   SUPUESTOS DE NOMBRES DE COLUMNAS (verificar contra tu DDL, ver bloque 0)
-     proyecto        (id_proyecto, nombre_proyecto)
-     cientifico_datos(id_cientifico, nombre)
-     experimento     (id_experimento, id_proyecto, id_cientifico, fecha_ejecucion)
-     modelo          (id_modelo, id_experimento, nombre, algoritmo, version)
-     metrica         (id_metrica, id_modelo, tipo_metrica, valor)
-     dataset         (id_dataset, nombre, fuente, tamanio_filas)
-     uso_dataset     (id_dataset, ...)
-   Si alguna columna se llama distinto en tu DDL, ajusta SOLO ese nombre.
+   ESQUEMA REAL (s08-creacion-tablas-solucion_MSSQL.sql)
+     proyecto        (id_proyecto, nombre_proyecto, descripcion)
+     cientifico_datos(id_cientifico, nombre, correo_institucional)
+     experimento     (id_experimento, id_proyecto, id_cientifico, fecha_ejecucion, configuracion)
+     modelo          (id_modelo, id_experimento [UNIQUE], nombre, version, algoritmo)
+     metrica         (id_metrica, id_modelo, nombre_metrica, valor, fecha_calculo)
+     dataset         (id_dataset, nombre, fuente, fecha_carga, tamanio_filas)
+     uso_dataset     (id_dataset, id_experimento)  -- PK compuesta
+     Datos: semilla de la Semana 8 (s08-datos-semilla.sql).
    ===================================================================== */
 
 USE datalab;
@@ -66,7 +66,7 @@ INNER JOIN dbo.experimento AS e
 -- Ejercicio 4. Metricas de modelos
 -- Pregunta: ¿que metricas y valores tiene cada modelo?
 SELECT m.nombre AS nombre_modelo,
-       met.tipo_metrica,
+       met.nombre_metrica,
        met.valor
 FROM dbo.modelo AS m
 INNER JOIN dbo.metrica AS met
@@ -133,12 +133,12 @@ ORDER BY e.fecha_ejecucion;
 -- Ejercicio 11. Ranking de accuracy (mayor a menor)
 -- Pregunta de negocio: ¿cuales son los modelos con mejor desempeño?
 SELECT m.nombre AS nombre_modelo,
-       met.tipo_metrica,
+       met.nombre_metrica,
        met.valor
 FROM dbo.modelo AS m
 INNER JOIN dbo.metrica AS met
     ON met.id_modelo = m.id_modelo
-WHERE met.tipo_metrica = 'accuracy'
+WHERE met.nombre_metrica = 'accuracy'
 ORDER BY met.valor DESC;
 
 -- Ejercicio 12. Modelos cuya version comienza por 1.2
@@ -186,7 +186,7 @@ WHERE m.id_experimento IN (
 
 -- Ejercicio 16. Metricas por encima del promedio global (escalar)
 SELECT met.id_modelo,
-       met.tipo_metrica,
+       met.nombre_metrica,
        met.valor
 FROM dbo.metrica AS met
 WHERE met.valor > (
